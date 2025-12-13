@@ -1,6 +1,16 @@
-import { Search, Bell, User, Shield, X } from 'lucide-react';
+import { Search, Bell, Shield, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface HeaderProps {
   searchQuery: string;
@@ -8,6 +18,7 @@ interface HeaderProps {
 }
 
 export function Header({ searchQuery, onSearchChange }: HeaderProps) {
+  const { user, signOut } = useAuth();
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchChange(e.target.value);
   };
@@ -41,9 +52,29 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
                 3
               </span>
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <User className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Avatar className="h-7 w-7">
+                    <AvatarFallback className="bg-ecoba-gold/20 text-ecoba-gold text-xs">
+                      {user?.email?.charAt(0).toUpperCase() || 'A'}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel className="font-normal">
+                  <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                    {user?.email}
+                  </p>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -78,9 +109,29 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
               3
             </span>
           </Button>
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-ecoba-gold/20 text-ecoba-gold">
+                    {user?.email?.charAt(0).toUpperCase() || 'A'}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel className="font-normal">
+                <p className="text-xs text-muted-foreground truncate max-w-[200px]">
+                  {user?.email}
+                </p>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut} className="text-destructive">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
