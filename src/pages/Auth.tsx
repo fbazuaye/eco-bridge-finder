@@ -27,10 +27,8 @@ export default function Auth() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   useEffect(() => {
-    if (!isLoading && user) {
-      if (isAdmin) {
-        navigate('/');
-      }
+    if (!isLoading && user && isAdmin) {
+      navigate('/dashboard');
     }
   }, [user, isAdmin, isLoading, navigate]);
 
