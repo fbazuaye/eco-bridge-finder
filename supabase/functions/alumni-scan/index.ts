@@ -63,7 +63,7 @@ serve(async (req) => {
     console.log('Platforms:', platforms);
 
     // Build search query for Edo College alumni
-    const searchQuery = `"Edo College" OR "ECOBA" OR "Edo College Old Boys" ${query} alumni`;
+    const searchQuery = `("Edo College" OR "ECOBA" OR "Edo College Old Boys" OR "attended Edo College") ${query} alumni Benin Nigeria`;
 
     // Use SerpAPI to search the web
     console.log('Searching with SerpAPI:', searchQuery);
