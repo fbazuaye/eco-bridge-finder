@@ -35,13 +35,8 @@ serve(async (req) => {
 
   try {
     const { query, platforms } = await req.json();
-    
-    if (!query) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Search query is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+
+    const normalizedQuery = typeof query === 'string' ? query.trim() : '';
 
     if (!SERPAPI_KEY) {
       console.error('SERPAPI_KEY not configured');
@@ -63,7 +58,7 @@ serve(async (req) => {
     console.log('Platforms:', platforms);
 
     // Build search query for Edo College alumni
-    const searchQuery = `("Edo College" OR "ECOBA" OR "Edo College Old Boys" OR "attended Edo College") ${query} alumni Benin Nigeria`;
+    const searchQuery = `("Edo College" OR "ECOBA" OR "Edo College Old Boys" OR "attended Edo College") ${normalizedQuery} alumni Benin Nigeria`;
 
     // Use SerpAPI to search the web
     console.log('Searching with SerpAPI:', searchQuery);
