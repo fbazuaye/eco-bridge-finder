@@ -14,7 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alumni_records: {
+        Row: {
+          bio: string | null
+          company: string | null
+          confidence_score: number
+          created_at: string
+          date_found: string
+          full_name: string
+          graduation_year: string | null
+          id: string
+          is_approved: boolean
+          location: string | null
+          matched_keywords: string[] | null
+          occupation: string | null
+          platform: Database["public"]["Enums"]["social_platform"]
+          profile_url: string
+          public_email: string | null
+          public_phone: string | null
+          source_attribution: string
+          status: Database["public"]["Enums"]["alumni_status"]
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          company?: string | null
+          confidence_score?: number
+          created_at?: string
+          date_found?: string
+          full_name: string
+          graduation_year?: string | null
+          id?: string
+          is_approved?: boolean
+          location?: string | null
+          matched_keywords?: string[] | null
+          occupation?: string | null
+          platform: Database["public"]["Enums"]["social_platform"]
+          profile_url: string
+          public_email?: string | null
+          public_phone?: string | null
+          source_attribution: string
+          status?: Database["public"]["Enums"]["alumni_status"]
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          company?: string | null
+          confidence_score?: number
+          created_at?: string
+          date_found?: string
+          full_name?: string
+          graduation_year?: string | null
+          id?: string
+          is_approved?: boolean
+          location?: string | null
+          matched_keywords?: string[] | null
+          occupation?: string | null
+          platform?: Database["public"]["Enums"]["social_platform"]
+          profile_url?: string
+          public_email?: string | null
+          public_phone?: string | null
+          source_attribution?: string
+          status?: Database["public"]["Enums"]["alumni_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      scan_history: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          platforms_scanned: string[] | null
+          records_found: number | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          platforms_scanned?: string[] | null
+          records_found?: number | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          platforms_scanned?: string[] | null
+          records_found?: number | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +121,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      alumni_status: "Confirmed" | "Probable" | "Uncertain"
+      social_platform:
+        | "LinkedIn"
+        | "Facebook"
+        | "Twitter"
+        | "Instagram"
+        | "Web"
+        | "News"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +255,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      alumni_status: ["Confirmed", "Probable", "Uncertain"],
+      social_platform: [
+        "LinkedIn",
+        "Facebook",
+        "Twitter",
+        "Instagram",
+        "Web",
+        "News",
+      ],
+    },
   },
 } as const
