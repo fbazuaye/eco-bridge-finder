@@ -6,17 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY');
+const SERPAPI_KEY = Deno.env.get('SERPAPI_KEY');
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-interface SearchResult {
-  url: string;
-  title?: string;
-  description?: string;
-  markdown?: string;
-}
 
 interface AlumniProfile {
   full_name: string;
@@ -50,10 +43,10 @@ serve(async (req) => {
       );
     }
 
-    if (!FIRECRAWL_API_KEY) {
-      console.error('FIRECRAWL_API_KEY not configured');
+    if (!SERPAPI_KEY) {
+      console.error('SERPAPI_KEY not configured');
       return new Response(
-        JSON.stringify({ success: false, error: 'Firecrawl API not configured' }),
+        JSON.stringify({ success: false, error: 'SerpAPI not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -72,35 +65,23 @@ serve(async (req) => {
     // Build search query for Edo College alumni
     const searchQuery = `"Edo College" OR "ECOBA" OR "Edo College Old Boys" ${query} alumni`;
 
-    // Use Firecrawl to search the web
-    console.log('Searching with Firecrawl:', searchQuery);
-    const searchResponse = await fetch('https://api.firecrawl.dev/v1/search', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: searchQuery,
-        limit: 10,
-        scrapeOptions: {
-          formats: ['markdown'],
-        },
-      }),
-    });
-
+    // Use SerpAPI to search the web
+    console.log('Searching with SerpAPI:', searchQuery);
+    const serpUrl = `https://serpapi.com/search.json?q=${encodeURIComponent(searchQuery)}&api_key=${SERPAPI_KEY}&num=10`;
+    
+    const searchResponse = await fetch(serpUrl);
     const searchData = await searchResponse.json();
-    console.log('Firecrawl response status:', searchResponse.status);
+    console.log('SerpAPI response status:', searchResponse.status);
 
     if (!searchResponse.ok) {
-      console.error('Firecrawl API error:', searchData);
+      console.error('SerpAPI error:', searchData);
       return new Response(
         JSON.stringify({ success: false, error: searchData.error || 'Search failed' }),
         { status: searchResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const results: SearchResult[] = searchData.data || [];
+    const results = searchData.organic_results || [];
     console.log('Found results:', results.length);
 
     if (results.length === 0) {
@@ -115,10 +96,11 @@ serve(async (req) => {
 
     for (const result of results) {
       try {
-        console.log('Analyzing result:', result.url);
+        console.log('Analyzing result:', result.link);
         
-        const content = result.markdown || result.description || '';
-        if (!content || content.length < 50) {
+        const content = `Title: ${result.title || ''}\nSnippet: ${result.snippet || ''}\nURL: ${result.link || ''}`;
+        
+        if (!content || content.length < 30) {
           console.log('Skipping - insufficient content');
           continue;
         }
@@ -158,7 +140,7 @@ serve(async (req) => {
               },
               {
                 role: 'user',
-                content: `Analyze this content from ${result.url}:\n\n${content.substring(0, 4000)}`
+                content: `Analyze this content from ${result.link}:\n\n${content}`
               }
             ],
           }),
@@ -197,12 +179,12 @@ serve(async (req) => {
           if (analysis.is_alumni && analysis.confidence_score >= 30) {
             // Determine platform from URL
             let platform: AlumniProfile['platform'] = 'Web';
-            const url = result.url.toLowerCase();
+            const url = result.link.toLowerCase();
             if (url.includes('linkedin')) platform = 'LinkedIn';
             else if (url.includes('facebook')) platform = 'Facebook';
             else if (url.includes('twitter') || url.includes('x.com')) platform = 'Twitter';
             else if (url.includes('instagram')) platform = 'Instagram';
-            else if (url.includes('news') || url.includes('guardian') || url.includes('punch')) platform = 'News';
+            else if (url.includes('news') || url.includes('guardian') || url.includes('punch') || url.includes('vanguard') || url.includes('thisday')) platform = 'News';
 
             profiles.push({
               full_name: analysis.full_name || 'Unknown',
@@ -213,10 +195,10 @@ serve(async (req) => {
               public_email: null,
               public_phone: null,
               platform,
-              profile_url: result.url,
+              profile_url: result.link,
               location: analysis.location,
               confidence_score: Math.min(100, Math.max(0, analysis.confidence_score)),
-              source_attribution: `Found via web search on ${new Date().toLocaleDateString()}`,
+              source_attribution: `Found via SerpAPI search on ${new Date().toLocaleDateString()}`,
               matched_keywords: analysis.matched_keywords || [],
               bio: analysis.bio,
             });
