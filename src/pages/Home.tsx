@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Users, Search, Shield, BarChart3, ArrowRight } from 'lucide-react';
+import { Search, Shield, BarChart3, ArrowRight } from 'lucide-react';
+import ecobaLogo from '@/assets/ecoba-logo.png';
 
 export default function Home() {
   return (
@@ -9,9 +10,7 @@ export default function Home() {
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ecoba-gold">
-              <Users className="h-5 w-5 text-background" />
-            </div>
+            <img src={ecobaLogo} alt="ECOBA Logo" className="h-12 w-auto" />
             <span className="font-display text-xl font-bold text-foreground">
               ECOBA Alumni
             </span>

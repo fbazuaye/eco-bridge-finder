@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import { Shield, LogIn, UserPlus, Loader2 } from 'lucide-react';
+import { LogIn, UserPlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import ecobaLogo from '@/assets/ecoba-logo.png';
 
 const authSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -121,9 +122,7 @@ export default function Auth() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ecoba-gold/20 mb-4">
-            <Shield className="h-8 w-8 text-ecoba-gold" />
-          </div>
+          <img src={ecobaLogo} alt="ECOBA Logo" className="h-24 w-auto mb-4" />
           <h1 className="font-display text-2xl font-bold text-foreground">
             ECOBA <span className="text-ecoba-gold">Intelligence</span>
           </h1>
