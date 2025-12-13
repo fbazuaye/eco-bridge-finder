@@ -21,7 +21,7 @@ import { useAlumniData } from '@/hooks/useAlumniData';
 import { exportToExcel } from '@/utils/exportToExcel';
 import { FilterState, DbAlumniRecord } from '@/types/alumni';
 import { useToast } from '@/hooks/use-toast';
-
+import { supabase } from '@/integrations/supabase/client';
 const Index = () => {
   const { toast } = useToast();
   const { data: alumniData, isLoading, stats, refetch, updateApproval } = useAlumniData();
@@ -132,22 +132,51 @@ const Index = () => {
     });
   };
 
-  const handleScan = () => {
+  const handleScan = async () => {
     setIsScanning(true);
     toast({
       title: "Scan Initiated",
-      description: "Scanning public web profiles for Edo College alumni...",
+      description: "Scanning public web profiles for Edo College alumni using AI...",
     });
     
-    // Simulate scan
-    setTimeout(() => {
-      setIsScanning(false);
-      refetch();
-      toast({
-        title: "Scan Complete",
-        description: "Scan finished. Refreshing data...",
+    try {
+      const { data, error } = await supabase.functions.invoke('alumni-scan', {
+        body: { 
+          query: filters.searchQuery || '',
+          platforms: ['LinkedIn', 'Facebook', 'Twitter', 'Web', 'News']
+        }
       });
-    }, 3000);
+
+      if (error) {
+        console.error('Scan error:', error);
+        toast({
+          title: "Scan Failed",
+          description: error.message || "Failed to scan for alumni. Please try again.",
+          variant: "destructive",
+        });
+      } else if (data?.success) {
+        const profileCount = data.profiles?.length || 0;
+        toast({
+          title: "Scan Complete",
+          description: `Found ${profileCount} potential alumni. Refreshing data...`,
+        });
+        refetch();
+      } else {
+        toast({
+          title: "Scan Complete",
+          description: data?.message || "No new alumni found.",
+        });
+      }
+    } catch (err) {
+      console.error('Scan error:', err);
+      toast({
+        title: "Scan Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   if (isLoading) {
