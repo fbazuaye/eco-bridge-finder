@@ -1,6 +1,25 @@
-import { AlumniRecord } from '@/types/alumni';
+// Legacy type for export function compatibility
+interface ExportAlumniRecord {
+  id: string;
+  fullName: string;
+  status: string;
+  graduationYear: string | null;
+  occupation: string | null;
+  company: string | null;
+  publicEmail: string | null;
+  publicPhone: string | null;
+  platform: string;
+  profileUrl: string;
+  location: string | null;
+  confidenceScore: number;
+  dateFound: Date;
+  isApproved: boolean;
+  sourceAttribution: string;
+  matchedKeywords: string[];
+  bio: string | null;
+}
 
-export function exportToExcel(data: AlumniRecord[], filename: string = 'ecoba-alumni-export') {
+export function exportToExcel(data: ExportAlumniRecord[], filename: string = 'ecoba-alumni-export') {
   // Create CSV content (can be opened in Excel)
   const headers = [
     'Full Name',
