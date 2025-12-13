@@ -1,4 +1,4 @@
-import { Search, Bell, User, Shield } from 'lucide-react';
+import { Search, Bell, User, Shield, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -9,9 +9,11 @@ interface HeaderProps {
 
 export function Header({ searchQuery, onSearchChange }: HeaderProps) {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    console.log('Search input changed:', value);
-    onSearchChange(value);
+    onSearchChange(e.target.value);
+  };
+
+  const clearSearch = () => {
+    onSearchChange('');
   };
 
   return (
@@ -54,8 +56,17 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
               placeholder="Search alumni by name, company, location..."
               value={searchQuery}
               onChange={handleSearchChange}
-              className="pl-10 bg-secondary/50 border-border/50 focus:border-ecoba-gold/50"
+              className="pl-10 pr-10 bg-secondary/50 border-border/50 focus:border-ecoba-gold/50"
             />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
