@@ -1,4 +1,4 @@
-import { Search, Bell, Shield, X, LogOut } from 'lucide-react';
+import { Search, Bell, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import ecobaLogo from '@/assets/ecoba-logo.png';
 
 interface HeaderProps {
   searchQuery: string;
@@ -33,9 +34,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
         {/* Logo and Title */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-ecoba-gold/20">
-              <Shield className="h-5 w-5 text-ecoba-gold" />
-            </div>
+            <img src={ecobaLogo} alt="ECOBA Logo" className="h-12 w-auto" />
             <div>
               <h1 className="font-display text-lg font-semibold text-foreground">
                 ECOBA <span className="text-ecoba-gold">Intelligence</span>
