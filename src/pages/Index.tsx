@@ -6,7 +6,7 @@ import {
   TrendingUp, 
   Download,
   RefreshCw,
-  Search
+  Loader2
 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { StatCard } from '@/components/StatCard';
@@ -17,15 +17,15 @@ import { PlatformChart } from '@/components/PlatformChart';
 import { LocationList } from '@/components/LocationList';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockAlumniData, getAlumniStats } from '@/data/mockAlumni';
+import { useAlumniData } from '@/hooks/useAlumniData';
 import { exportToExcel } from '@/utils/exportToExcel';
-import { AlumniRecord, FilterState } from '@/types/alumni';
+import { FilterState, DbAlumniRecord } from '@/types/alumni';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { toast } = useToast();
-  const [alumniData, setAlumniData] = useState(mockAlumniData);
-  const [selectedRecord, setSelectedRecord] = useState<AlumniRecord | null>(null);
+  const { data: alumniData, isLoading, stats, refetch, updateApproval } = useAlumniData();
+  const [selectedRecord, setSelectedRecord] = useState<DbAlumniRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   
@@ -39,15 +39,13 @@ const Index = () => {
     searchQuery: '',
   });
 
-  const stats = useMemo(() => getAlumniStats(), []);
-
   const filteredData = useMemo(() => {
     return alumniData.filter(record => {
       // Search query
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
         const searchFields = [
-          record.fullName,
+          record.full_name,
           record.company,
           record.location,
           record.occupation
@@ -56,8 +54,8 @@ const Index = () => {
       }
 
       // Year range
-      if (record.graduationYear) {
-        const year = parseInt(record.graduationYear);
+      if (record.graduation_year) {
+        const year = parseInt(record.graduation_year);
         if (year < filters.yearRange[0] || year > filters.yearRange[1]) return false;
       }
 
@@ -72,11 +70,11 @@ const Index = () => {
       }
 
       // Confidence
-      if (record.confidenceScore < filters.minConfidence) return false;
+      if (record.confidence_score < filters.minConfidence) return false;
 
       // Approval status
-      if (filters.approvalStatus === 'approved' && !record.isApproved) return false;
-      if (filters.approvalStatus === 'pending' && record.isApproved) return false;
+      if (filters.approvalStatus === 'approved' && !record.is_approved) return false;
+      if (filters.approvalStatus === 'pending' && record.is_approved) return false;
 
       return true;
     });
@@ -93,29 +91,41 @@ const Index = () => {
   }, [filters]);
 
   const handleApprovalChange = (id: string, approved: boolean) => {
-    setAlumniData(prev => 
-      prev.map(record => 
-        record.id === id ? { ...record, isApproved: approved } : record
-      )
-    );
+    updateApproval(id, approved);
     
     if (selectedRecord?.id === id) {
-      setSelectedRecord(prev => prev ? { ...prev, isApproved: approved } : null);
+      setSelectedRecord(prev => prev ? { ...prev, is_approved: approved } : null);
     }
-
-    toast({
-      title: approved ? "Record Approved" : "Approval Removed",
-      description: `Alumni record has been ${approved ? 'approved' : 'marked for review'}.`,
-    });
   };
 
-  const handleViewDetails = (record: AlumniRecord) => {
+  const handleViewDetails = (record: DbAlumniRecord) => {
     setSelectedRecord(record);
     setIsModalOpen(true);
   };
 
   const handleExport = () => {
-    exportToExcel(filteredData, 'ecoba-alumni-data');
+    // Transform data for export
+    const exportData = filteredData.map(record => ({
+      id: record.id,
+      fullName: record.full_name,
+      status: record.status,
+      graduationYear: record.graduation_year,
+      occupation: record.occupation,
+      company: record.company,
+      publicEmail: record.public_email,
+      publicPhone: record.public_phone,
+      platform: record.platform,
+      profileUrl: record.profile_url,
+      location: record.location,
+      confidenceScore: record.confidence_score,
+      dateFound: new Date(record.date_found),
+      isApproved: record.is_approved,
+      sourceAttribution: record.source_attribution,
+      matchedKeywords: record.matched_keywords || [],
+      bio: record.bio,
+    }));
+    
+    exportToExcel(exportData, 'ecoba-alumni-data');
     toast({
       title: "Export Complete",
       description: `${filteredData.length} records exported to Excel.`,
@@ -132,12 +142,24 @@ const Index = () => {
     // Simulate scan
     setTimeout(() => {
       setIsScanning(false);
+      refetch();
       toast({
         title: "Scan Complete",
-        description: "Found 3 new potential alumni records.",
+        description: "Scan finished. Refreshing data...",
       });
     }, 3000);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-ecoba-gold" />
+          <p className="text-muted-foreground">Loading alumni data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

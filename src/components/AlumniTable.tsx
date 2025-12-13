@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import { 
   ExternalLink, 
-  Check, 
-  X, 
   ChevronDown, 
   ChevronUp,
-  MoreHorizontal,
   Eye
 } from 'lucide-react';
-import { AlumniRecord, SocialPlatform, AlumniStatus } from '@/types/alumni';
+import { DbAlumniRecord, SocialPlatform, AlumniStatus } from '@/types/alumni';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -20,21 +17,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface AlumniTableProps {
-  data: AlumniRecord[];
+  data: DbAlumniRecord[];
   onApprovalChange: (id: string, approved: boolean) => void;
-  onViewDetails: (record: AlumniRecord) => void;
+  onViewDetails: (record: DbAlumniRecord) => void;
 }
 
-type SortField = 'fullName' | 'confidenceScore' | 'dateFound' | 'graduationYear';
+type SortField = 'full_name' | 'confidence_score' | 'date_found' | 'graduation_year';
 type SortDirection = 'asc' | 'desc';
 
 const platformVariants: Record<SocialPlatform, "linkedin" | "twitter" | "facebook" | "instagram" | "web" | "news"> = {
@@ -53,7 +44,7 @@ const statusVariants: Record<AlumniStatus, "confirmed" | "probable" | "uncertain
 };
 
 export function AlumniTable({ data, onApprovalChange, onViewDetails }: AlumniTableProps) {
-  const [sortField, setSortField] = useState<SortField>('confidenceScore');
+  const [sortField, setSortField] = useState<SortField>('confidence_score');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const handleSort = (field: SortField) => {
@@ -69,7 +60,7 @@ export function AlumniTable({ data, onApprovalChange, onViewDetails }: AlumniTab
     let aVal: any = a[sortField];
     let bVal: any = b[sortField];
 
-    if (sortField === 'dateFound') {
+    if (sortField === 'date_found') {
       aVal = new Date(aVal).getTime();
       bVal = new Date(bVal).getTime();
     }
@@ -109,21 +100,21 @@ export function AlumniTable({ data, onApprovalChange, onViewDetails }: AlumniTab
               </TableHead>
               <TableHead 
                 className="cursor-pointer hover:text-foreground transition-colors"
-                onClick={() => handleSort('fullName')}
+                onClick={() => handleSort('full_name')}
               >
                 <div className="flex items-center">
                   Name
-                  <SortIcon field="fullName" />
+                  <SortIcon field="full_name" />
                 </div>
               </TableHead>
               <TableHead>Status</TableHead>
               <TableHead 
                 className="cursor-pointer hover:text-foreground transition-colors"
-                onClick={() => handleSort('graduationYear')}
+                onClick={() => handleSort('graduation_year')}
               >
                 <div className="flex items-center">
                   Year
-                  <SortIcon field="graduationYear" />
+                  <SortIcon field="graduation_year" />
                 </div>
               </TableHead>
               <TableHead>Occupation</TableHead>
@@ -131,20 +122,20 @@ export function AlumniTable({ data, onApprovalChange, onViewDetails }: AlumniTab
               <TableHead>Location</TableHead>
               <TableHead 
                 className="cursor-pointer hover:text-foreground transition-colors"
-                onClick={() => handleSort('confidenceScore')}
+                onClick={() => handleSort('confidence_score')}
               >
                 <div className="flex items-center">
                   Confidence
-                  <SortIcon field="confidenceScore" />
+                  <SortIcon field="confidence_score" />
                 </div>
               </TableHead>
               <TableHead 
                 className="cursor-pointer hover:text-foreground transition-colors"
-                onClick={() => handleSort('dateFound')}
+                onClick={() => handleSort('date_found')}
               >
                 <div className="flex items-center">
                   Found
-                  <SortIcon field="dateFound" />
+                  <SortIcon field="date_found" />
                 </div>
               </TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
@@ -156,20 +147,20 @@ export function AlumniTable({ data, onApprovalChange, onViewDetails }: AlumniTab
                 key={record.id} 
                 className={cn(
                   "table-row-hover border-border/30",
-                  !record.isApproved && "bg-secondary/20"
+                  !record.is_approved && "bg-secondary/20"
                 )}
                 style={{ animationDelay: `${index * 30}ms` }}
               >
                 <TableCell>
                   <Switch
-                    checked={record.isApproved}
+                    checked={record.is_approved}
                     onCheckedChange={(checked) => onApprovalChange(record.id, checked)}
                     className="data-[state=checked]:bg-green-500"
                   />
                 </TableCell>
                 <TableCell>
                   <div>
-                    <p className="font-medium text-foreground">{record.fullName}</p>
+                    <p className="font-medium text-foreground">{record.full_name}</p>
                     {record.company && (
                       <p className="text-xs text-muted-foreground">{record.company}</p>
                     )}
@@ -181,7 +172,7 @@ export function AlumniTable({ data, onApprovalChange, onViewDetails }: AlumniTab
                   </Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {record.graduationYear || '—'}
+                  {record.graduation_year || '—'}
                 </TableCell>
                 <TableCell className="text-muted-foreground max-w-[150px] truncate">
                   {record.occupation || '—'}
@@ -198,17 +189,17 @@ export function AlumniTable({ data, onApprovalChange, onViewDetails }: AlumniTab
                   <div className="flex items-center gap-2">
                     <div className="confidence-bar w-16">
                       <div 
-                        className={cn("confidence-fill", getConfidenceColor(record.confidenceScore))}
-                        style={{ width: `${record.confidenceScore}%` }}
+                        className={cn("confidence-fill", getConfidenceColor(record.confidence_score))}
+                        style={{ width: `${record.confidence_score}%` }}
                       />
                     </div>
                     <span className="text-sm font-medium text-muted-foreground">
-                      {record.confidenceScore}%
+                      {record.confidence_score}%
                     </span>
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {new Date(record.dateFound).toLocaleDateString('en-GB', {
+                  {new Date(record.date_found).toLocaleDateString('en-GB', {
                     day: 'numeric',
                     month: 'short',
                   })}
@@ -224,7 +215,7 @@ export function AlumniTable({ data, onApprovalChange, onViewDetails }: AlumniTab
                       <Eye className="h-4 w-4" />
                     </Button>
                     <a 
-                      href={record.profileUrl} 
+                      href={record.profile_url} 
                       target="_blank" 
                       rel="noopener noreferrer"
                     >
