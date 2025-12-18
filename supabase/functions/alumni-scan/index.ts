@@ -6,7 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SERPAPI_KEY = Deno.env.get('SERPAPI_KEY');
+const GOOGLE_CSE_API_KEY = Deno.env.get('GOOGLE_CSE_API_KEY');
+const GOOGLE_CSE_CX = Deno.env.get('GOOGLE_CSE_CX');
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -28,6 +29,149 @@ interface AlumniProfile {
   bio: string | null;
 }
 
+interface PlatformConfig {
+  name: AlumniProfile['platform'];
+  siteSearch?: string;
+  queryTemplate: string;
+}
+
+// Platform-specific search configurations
+const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
+  linkedin: {
+    name: 'LinkedIn',
+    siteSearch: 'linkedin.com/in',
+    queryTemplate: '("Edo College" OR "ECOBA") {query}',
+  },
+  facebook: {
+    name: 'Facebook',
+    siteSearch: 'facebook.com',
+    queryTemplate: '("Edo College" OR "ECOBA" OR "Edo College Old Boys") {query}',
+  },
+  twitter: {
+    name: 'Twitter',
+    siteSearch: 'twitter.com',
+    queryTemplate: '("Edo College" OR "ECOBA") {query} alumni',
+  },
+  instagram: {
+    name: 'Instagram',
+    siteSearch: 'instagram.com',
+    queryTemplate: '("Edo College" OR "ECOBA") {query}',
+  },
+  news: {
+    name: 'News',
+    siteSearch: 'guardian.ng',
+    queryTemplate: '("Edo College" OR "ECOBA" OR "Edo College Old Boys") {query} alumni',
+  },
+  web: {
+    name: 'Web',
+    // No site restriction - general web search
+    queryTemplate: '("Edo College" OR "ECOBA" OR "Edo College Old Boys" OR "attended Edo College") {query} alumni Benin Nigeria',
+  },
+};
+
+// Additional news sites to search
+const NEWS_SITES = ['guardian.ng', 'punchng.com', 'vanguardngr.com', 'thisdaylive.com', 'businessday.ng'];
+const BLOG_SITES = ['medium.com', 'blogspot.com', 'wordpress.com'];
+
+async function searchPlatform(
+  platform: string, 
+  userQuery: string, 
+  apiKey: string, 
+  cx: string
+): Promise<any[]> {
+  const config = PLATFORM_CONFIGS[platform];
+  if (!config) {
+    console.error(`Unknown platform: ${platform}`);
+    return [];
+  }
+
+  const query = config.queryTemplate.replace('{query}', userQuery);
+  
+  const params = new URLSearchParams({
+    key: apiKey,
+    cx: cx,
+    q: query,
+    num: '10',
+  });
+
+  // Add site restriction if specified
+  if (config.siteSearch) {
+    params.append('siteSearch', config.siteSearch);
+    params.append('siteSearchFilter', 'i'); // 'i' = include only results from this site
+  }
+
+  const url = `https://www.googleapis.com/customsearch/v1?${params.toString()}`;
+  
+  console.log(`Searching ${platform} with query:`, query);
+  console.log(`Site restriction:`, config.siteSearch || 'none');
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error(`Google CSE error for ${platform}:`, data.error?.message || data);
+      return [];
+    }
+
+    return data.items || [];
+  } catch (error) {
+    console.error(`Error searching ${platform}:`, error);
+    return [];
+  }
+}
+
+async function searchMultipleSites(
+  sites: string[],
+  platformName: AlumniProfile['platform'],
+  userQuery: string,
+  queryTemplate: string,
+  apiKey: string,
+  cx: string
+): Promise<{ results: any[], platform: AlumniProfile['platform'] }[]> {
+  const allResults: { results: any[], platform: AlumniProfile['platform'] }[] = [];
+  
+  for (const site of sites) {
+    const query = queryTemplate.replace('{query}', userQuery);
+    
+    const params = new URLSearchParams({
+      key: apiKey,
+      cx: cx,
+      q: query,
+      num: '5', // Fewer results per site for multi-site searches
+      siteSearch: site,
+      siteSearchFilter: 'i',
+    });
+
+    const url = `https://www.googleapis.com/customsearch/v1?${params.toString()}`;
+    
+    console.log(`Searching ${site} for ${platformName}`);
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (response.ok && data.items) {
+        allResults.push({ results: data.items, platform: platformName });
+      }
+    } catch (error) {
+      console.error(`Error searching ${site}:`, error);
+    }
+  }
+
+  return allResults;
+}
+
+function determinePlatformFromUrl(url: string): AlumniProfile['platform'] {
+  const lowerUrl = url.toLowerCase();
+  if (lowerUrl.includes('linkedin')) return 'LinkedIn';
+  if (lowerUrl.includes('facebook')) return 'Facebook';
+  if (lowerUrl.includes('twitter') || lowerUrl.includes('x.com')) return 'Twitter';
+  if (lowerUrl.includes('instagram')) return 'Instagram';
+  if (NEWS_SITES.some(site => lowerUrl.includes(site)) || lowerUrl.includes('news')) return 'News';
+  return 'Web';
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -35,13 +179,13 @@ serve(async (req) => {
 
   try {
     const { query, platforms } = await req.json();
-
     const normalizedQuery = typeof query === 'string' ? query.trim() : '';
 
-    if (!SERPAPI_KEY) {
-      console.error('SERPAPI_KEY not configured');
+    // Validate API keys
+    if (!GOOGLE_CSE_API_KEY || !GOOGLE_CSE_CX) {
+      console.error('Google CSE credentials not configured');
       return new Response(
-        JSON.stringify({ success: false, error: 'SerpAPI not configured' }),
+        JSON.stringify({ success: false, error: 'Google Custom Search not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -54,42 +198,82 @@ serve(async (req) => {
       );
     }
 
-    console.log('Starting alumni scan for:', query);
+    console.log('Starting alumni scan with Google CSE');
+    console.log('Query:', normalizedQuery);
     console.log('Platforms:', platforms);
 
-    // Build search query for Edo College alumni
-    const searchQuery = `("Edo College" OR "ECOBA" OR "Edo College Old Boys" OR "attended Edo College") ${normalizedQuery} alumni Benin Nigeria`;
+    // Determine which platforms to search
+    const platformsToSearch = platforms && platforms.length > 0 
+      ? platforms.map((p: string) => p.toLowerCase())
+      : Object.keys(PLATFORM_CONFIGS);
 
-    // Use SerpAPI to search the web
-    console.log('Searching with SerpAPI:', searchQuery);
-    const serpUrl = `https://serpapi.com/search.json?q=${encodeURIComponent(searchQuery)}&api_key=${SERPAPI_KEY}&num=10`;
-    
-    const searchResponse = await fetch(serpUrl);
-    const searchData = await searchResponse.json();
-    console.log('SerpAPI response status:', searchResponse.status);
+    // Collect all search results
+    const allResults: { result: any, platform: AlumniProfile['platform'] }[] = [];
 
-    if (!searchResponse.ok) {
-      console.error('SerpAPI error:', searchData);
-      return new Response(
-        JSON.stringify({ success: false, error: searchData.error || 'Search failed' }),
-        { status: searchResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    for (const platform of platformsToSearch) {
+      if (platform === 'news') {
+        // Search multiple news sites
+        const newsResults = await searchMultipleSites(
+          NEWS_SITES,
+          'News',
+          normalizedQuery,
+          PLATFORM_CONFIGS.news.queryTemplate,
+          GOOGLE_CSE_API_KEY,
+          GOOGLE_CSE_CX
+        );
+        for (const { results, platform: p } of newsResults) {
+          for (const result of results) {
+            allResults.push({ result, platform: p });
+          }
+        }
+      } else if (platform === 'blogs') {
+        // Search multiple blog sites
+        const blogResults = await searchMultipleSites(
+          BLOG_SITES,
+          'Web',
+          normalizedQuery,
+          '("Edo College" OR "ECOBA") {query} alumni',
+          GOOGLE_CSE_API_KEY,
+          GOOGLE_CSE_CX
+        );
+        for (const { results, platform: p } of blogResults) {
+          for (const result of results) {
+            allResults.push({ result, platform: p });
+          }
+        }
+      } else if (PLATFORM_CONFIGS[platform]) {
+        const results = await searchPlatform(platform, normalizedQuery, GOOGLE_CSE_API_KEY, GOOGLE_CSE_CX);
+        const platformName = PLATFORM_CONFIGS[platform].name;
+        for (const result of results) {
+          allResults.push({ result, platform: platformName });
+        }
+      }
     }
 
-    const results = searchData.organic_results || [];
-    console.log('Found results:', results.length);
+    console.log('Total search results:', allResults.length);
 
-    if (results.length === 0) {
+    if (allResults.length === 0) {
       return new Response(
         JSON.stringify({ success: true, profiles: [], message: 'No results found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Use AI to analyze each result and extract alumni profiles
+    // Deduplicate by URL
+    const seenUrls = new Set<string>();
+    const uniqueResults = allResults.filter(({ result }) => {
+      const url = result.link;
+      if (seenUrls.has(url)) return false;
+      seenUrls.add(url);
+      return true;
+    });
+
+    console.log('Unique results after deduplication:', uniqueResults.length);
+
+    // Analyze each result with AI
     const profiles: AlumniProfile[] = [];
 
-    for (const result of results) {
+    for (const { result, platform } of uniqueResults) {
       try {
         console.log('Analyzing result:', result.link);
         
@@ -146,7 +330,12 @@ serve(async (req) => {
           console.error('AI analysis error:', aiResponse.status, errorText);
           
           if (aiResponse.status === 429) {
-            console.log('Rate limited, stopping analysis');
+            console.log('Rate limited, waiting before continuing...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            continue;
+          }
+          if (aiResponse.status === 402) {
+            console.log('Payment required - stopping analysis');
             break;
           }
           continue;
@@ -172,14 +361,8 @@ serve(async (req) => {
           const analysis = JSON.parse(jsonStr);
           
           if (analysis.is_alumni && analysis.confidence_score >= 30) {
-            // Determine platform from URL
-            let platform: AlumniProfile['platform'] = 'Web';
-            const url = result.link.toLowerCase();
-            if (url.includes('linkedin')) platform = 'LinkedIn';
-            else if (url.includes('facebook')) platform = 'Facebook';
-            else if (url.includes('twitter') || url.includes('x.com')) platform = 'Twitter';
-            else if (url.includes('instagram')) platform = 'Instagram';
-            else if (url.includes('news') || url.includes('guardian') || url.includes('punch') || url.includes('vanguard') || url.includes('thisday')) platform = 'News';
+            // Use platform from search or determine from URL
+            const detectedPlatform = platform || determinePlatformFromUrl(result.link);
 
             profiles.push({
               full_name: analysis.full_name || 'Unknown',
@@ -189,11 +372,11 @@ serve(async (req) => {
               company: analysis.company,
               public_email: null,
               public_phone: null,
-              platform,
+              platform: detectedPlatform,
               profile_url: result.link,
               location: analysis.location,
               confidence_score: Math.min(100, Math.max(0, analysis.confidence_score)),
-              source_attribution: `Found via SerpAPI search on ${new Date().toLocaleDateString()}`,
+              source_attribution: `Found via Google Custom Search on ${new Date().toLocaleDateString()}`,
               matched_keywords: analysis.matched_keywords || [],
               bio: analysis.bio,
             });
