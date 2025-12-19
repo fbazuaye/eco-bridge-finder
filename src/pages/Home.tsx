@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Search, Shield, BarChart3, ArrowRight } from 'lucide-react';
+import { HelpModal } from '@/components/HelpModal';
 import ecobaLogo from '@/assets/ecoba-logo.png';
 
 export default function Home() {
@@ -15,12 +16,15 @@ export default function Home() {
               ECOBA Alumni
             </span>
           </div>
-          <Link to="/auth">
-            <Button variant="default" className="bg-ecoba-gold hover:bg-ecoba-gold/90 text-background">
-              Sign In
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <HelpModal variant="inline" />
+            <Link to="/auth">
+              <Button variant="default" className="bg-ecoba-gold hover:bg-ecoba-gold/90 text-background">
+                Sign In
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
