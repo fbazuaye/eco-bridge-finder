@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { HelpModal } from '@/components/HelpModal';
 import ecobaLogo from '@/assets/ecoba-logo.png';
 
 interface HeaderProps {
@@ -102,6 +103,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
 
         {/* Right Actions - Desktop */}
         <div className="hidden md:flex items-center gap-3">
+          <HelpModal />
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-ecoba-gold text-[10px] font-bold text-ecoba-green-dark">
