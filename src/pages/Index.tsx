@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 const Index = () => {
   const { toast } = useToast();
-  const { data: alumniData, isLoading, stats, refetch, updateApproval } = useAlumniData();
+  const { data: alumniData, isLoading, stats, availableLocations, refetch, updateApproval } = useAlumniData();
   const [selectedRecord, setSelectedRecord] = useState<DbAlumniRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -77,6 +77,11 @@ const Index = () => {
       if (filters.approvalStatus === 'approved' && !record.is_approved) return false;
       if (filters.approvalStatus === 'pending' && record.is_approved) return false;
 
+      // Locations
+      if (filters.locations.length > 0 && (!record.location || !filters.locations.includes(record.location))) {
+        return false;
+      }
+
       return true;
     });
   }, [alumniData, filters]);
@@ -88,6 +93,7 @@ const Index = () => {
     if (filters.minConfidence > 0) count++;
     if (filters.approvalStatus !== 'all') count++;
     if (filters.yearRange[0] > 1970 || filters.yearRange[1] < 2024) count++;
+    if (filters.locations.length > 0) count++;
     return count;
   }, [filters]);
 
@@ -264,6 +270,7 @@ const Index = () => {
               filters={filters}
               onFiltersChange={setFilters}
               activeFilterCount={activeFilterCount}
+              availableLocations={availableLocations}
             />
 
             <Button 
