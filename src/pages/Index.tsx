@@ -270,7 +270,6 @@ const Index = () => {
               filters={filters}
               onFiltersChange={setFilters}
               activeFilterCount={activeFilterCount}
-              availableLocations={availableLocations}
             />
 
             <Button 

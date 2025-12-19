@@ -20,18 +20,21 @@ interface FilterPanelProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   activeFilterCount: number;
-  availableLocations: string[];
 }
 
 const platforms: SocialPlatform[] = ['LinkedIn', 'Facebook', 'Twitter', 'Instagram', 'Web', 'News'];
 const statuses: AlumniStatus[] = ['Confirmed', 'Probable', 'Uncertain'];
 
-export function FilterPanel({ filters, onFiltersChange, activeFilterCount, availableLocations }: FilterPanelProps) {
-  const [locationSearch, setLocationSearch] = useState('');
+export function FilterPanel({ filters, onFiltersChange, activeFilterCount }: FilterPanelProps) {
+  const [locationInput, setLocationInput] = useState('');
 
-  const filteredLocations = availableLocations.filter(loc =>
-    loc.toLowerCase().includes(locationSearch.toLowerCase())
-  );
+  const addLocation = () => {
+    const trimmed = locationInput.trim();
+    if (trimmed && !filters.locations.includes(trimmed)) {
+      onFiltersChange({ ...filters, locations: [...filters.locations, trimmed] });
+      setLocationInput('');
+    }
+  };
 
   const handleLocationToggle = (location: string) => {
     const newLocations = filters.locations.includes(location)
@@ -156,9 +159,37 @@ export function FilterPanel({ filters, onFiltersChange, activeFilterCount, avail
               Location
             </Label>
             
+            {/* Free text input */}
+            <div className="flex gap-2 mb-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Enter any location..."
+                  value={locationInput}
+                  onChange={(e) => setLocationInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addLocation();
+                    }
+                  }}
+                  className="pl-8 h-9 bg-background"
+                />
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="gold-outline"
+                onClick={addLocation}
+                disabled={!locationInput.trim()}
+              >
+                Add
+              </Button>
+            </div>
+
             {/* Selected locations badges */}
             {filters.locations.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex flex-wrap gap-2">
                 {filters.locations.map((location) => (
                   <Badge
                     key={location}
@@ -172,44 +203,6 @@ export function FilterPanel({ filters, onFiltersChange, activeFilterCount, avail
                 ))}
               </div>
             )}
-
-            {/* Search input */}
-            <div className="relative mb-2">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search locations..."
-                value={locationSearch}
-                onChange={(e) => setLocationSearch(e.target.value)}
-                className="pl-8 h-9 bg-background"
-              />
-            </div>
-
-            {/* Location checkboxes */}
-            <ScrollArea className="h-[140px] rounded-md border border-border p-2">
-              <div className="space-y-2">
-                {filteredLocations.length > 0 ? (
-                  filteredLocations.map((location) => (
-                    <div key={location} className="flex items-center space-x-3">
-                      <Checkbox
-                        id={`location-${location}`}
-                        checked={filters.locations.includes(location)}
-                        onCheckedChange={() => handleLocationToggle(location)}
-                      />
-                      <label
-                        htmlFor={`location-${location}`}
-                        className="text-sm text-foreground cursor-pointer truncate"
-                      >
-                        {location}
-                      </label>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-2">
-                    {availableLocations.length === 0 ? 'No locations available' : 'No locations match your search'}
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
           </div>
 
           {/* Platforms */}
