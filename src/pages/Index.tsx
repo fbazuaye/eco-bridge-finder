@@ -15,7 +15,7 @@ import { AlumniTable } from '@/components/AlumniTable';
 import { AlumniDetailModal } from '@/components/AlumniDetailModal';
 import { PlatformChart } from '@/components/PlatformChart';
 import { LocationList } from '@/components/LocationList';
-import { HelpModal } from '@/components/HelpModal';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAlumniData } from '@/hooks/useAlumniData';
@@ -204,11 +204,10 @@ const Index = () => {
           <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">
             Alumni <span className="text-ecoba-gold">Intelligence</span> Dashboard
           </h1>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-4">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             AI-powered discovery and verification of Edo College Old Boys worldwide. 
             Bridging memories, building futures.
           </p>
-          <HelpModal variant="inline" />
         </div>
 
         {/* Stats Grid */}
