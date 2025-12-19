@@ -44,13 +44,24 @@ function HelpSection({ icon, title, children }: HelpSectionProps) {
   );
 }
 
-export function HelpModal() {
+interface HelpModalProps {
+  variant?: 'icon' | 'inline';
+}
+
+export function HelpModal({ variant = 'icon' }: HelpModalProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" title="Help & Instructions">
-          <HelpCircle className="h-5 w-5" />
-        </Button>
+        {variant === 'inline' ? (
+          <Button variant="gold-outline" size="sm" className="gap-2">
+            <HelpCircle className="h-4 w-4" />
+            How to Use This App
+          </Button>
+        ) : (
+          <Button variant="ghost" size="icon" className="relative" title="Help & Instructions">
+            <HelpCircle className="h-5 w-5" />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh]">
         <DialogHeader>
