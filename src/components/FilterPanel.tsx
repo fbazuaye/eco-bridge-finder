@@ -1,9 +1,12 @@
-import { Filter, X } from 'lucide-react';
+import { useState } from 'react';
+import { Filter, X, MapPin, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { FilterState, SocialPlatform, AlumniStatus } from '@/types/alumni';
 import {
   Sheet,
@@ -17,12 +20,26 @@ interface FilterPanelProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   activeFilterCount: number;
+  availableLocations: string[];
 }
 
 const platforms: SocialPlatform[] = ['LinkedIn', 'Facebook', 'Twitter', 'Instagram', 'Web', 'News'];
 const statuses: AlumniStatus[] = ['Confirmed', 'Probable', 'Uncertain'];
 
-export function FilterPanel({ filters, onFiltersChange, activeFilterCount }: FilterPanelProps) {
+export function FilterPanel({ filters, onFiltersChange, activeFilterCount, availableLocations }: FilterPanelProps) {
+  const [locationSearch, setLocationSearch] = useState('');
+
+  const filteredLocations = availableLocations.filter(loc =>
+    loc.toLowerCase().includes(locationSearch.toLowerCase())
+  );
+
+  const handleLocationToggle = (location: string) => {
+    const newLocations = filters.locations.includes(location)
+      ? filters.locations.filter(l => l !== location)
+      : [...filters.locations, location];
+    onFiltersChange({ ...filters, locations: newLocations });
+  };
+
   const handlePlatformToggle = (platform: SocialPlatform) => {
     const newPlatforms = filters.platforms.includes(platform)
       ? filters.platforms.filter(p => p !== platform)
@@ -130,6 +147,69 @@ export function FilterPanel({ filters, onFiltersChange, activeFilterCount }: Fil
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Locations */}
+          <div>
+            <Label className="text-sm font-medium text-foreground mb-3 block">
+              <MapPin className="h-4 w-4 inline mr-1" />
+              Location
+            </Label>
+            
+            {/* Selected locations badges */}
+            {filters.locations.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {filters.locations.map((location) => (
+                  <Badge
+                    key={location}
+                    variant="gold"
+                    className="cursor-pointer gap-1"
+                    onClick={() => handleLocationToggle(location)}
+                  >
+                    {location}
+                    <X className="h-3 w-3" />
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Search input */}
+            <div className="relative mb-2">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search locations..."
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+                className="pl-8 h-9 bg-background"
+              />
+            </div>
+
+            {/* Location checkboxes */}
+            <ScrollArea className="h-[140px] rounded-md border border-border p-2">
+              <div className="space-y-2">
+                {filteredLocations.length > 0 ? (
+                  filteredLocations.map((location) => (
+                    <div key={location} className="flex items-center space-x-3">
+                      <Checkbox
+                        id={`location-${location}`}
+                        checked={filters.locations.includes(location)}
+                        onCheckedChange={() => handleLocationToggle(location)}
+                      />
+                      <label
+                        htmlFor={`location-${location}`}
+                        className="text-sm text-foreground cursor-pointer truncate"
+                      >
+                        {location}
+                      </label>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    {availableLocations.length === 0 ? 'No locations available' : 'No locations match your search'}
+                  </p>
+                )}
+              </div>
+            </ScrollArea>
           </div>
 
           {/* Platforms */}

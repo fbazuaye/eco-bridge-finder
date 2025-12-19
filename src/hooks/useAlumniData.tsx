@@ -84,6 +84,17 @@ export function useAlumniData() {
     }
   };
 
+  // Extract unique locations for the filter
+  const availableLocations = useMemo(() => {
+    const locations = new Set<string>();
+    data.forEach(r => {
+      if (r.location) {
+        locations.add(r.location);
+      }
+    });
+    return Array.from(locations).sort();
+  }, [data]);
+
   const stats = useMemo<AlumniStats>(() => {
     const totalRecords = data.length;
     const confirmedCount = data.filter(r => r.status === 'Confirmed').length;
@@ -129,6 +140,7 @@ export function useAlumniData() {
     isLoading,
     error,
     stats,
+    availableLocations,
     refetch: fetchAlumni,
     updateApproval,
   };
