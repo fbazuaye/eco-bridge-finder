@@ -80,6 +80,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          related_record_id: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          related_record_id?: string | null
+          title: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          related_record_id?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_related_record_id_fkey"
+            columns: ["related_record_id"]
+            isOneToOne: false
+            referencedRelation: "alumni_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scan_history: {
         Row: {
           completed_at: string | null
@@ -151,6 +192,11 @@ export type Database = {
     Enums: {
       alumni_status: "Confirmed" | "Probable" | "Uncertain"
       app_role: "admin" | "moderator" | "user"
+      notification_type:
+        | "new_record"
+        | "scan_complete"
+        | "needs_review"
+        | "system"
       social_platform:
         | "LinkedIn"
         | "Facebook"
@@ -287,6 +333,12 @@ export const Constants = {
     Enums: {
       alumni_status: ["Confirmed", "Probable", "Uncertain"],
       app_role: ["admin", "moderator", "user"],
+      notification_type: [
+        "new_record",
+        "scan_complete",
+        "needs_review",
+        "system",
+      ],
       social_platform: [
         "LinkedIn",
         "Facebook",
