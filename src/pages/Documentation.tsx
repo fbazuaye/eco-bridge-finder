@@ -329,7 +329,7 @@ export default function Documentation() {
                       <td className="py-3 px-2 flex items-center gap-2">
                         <Eye className="h-4 w-4" />
                         <ExternalLink className="h-4 w-4" />
-                        Actions
+                        View Search Details
                       </td>
                       <td className="py-3 px-2">
                         <strong>Eye icon:</strong> View detailed profile modal. <br />
