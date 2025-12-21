@@ -17,7 +17,12 @@ import {
   Shield,
   BookOpen,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Image,
+  Monitor,
+  Table,
+  SlidersHorizontal,
+  MousePointer
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +32,34 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import ecobaLogo from '@/assets/ecoba-logo.png';
+
+// Visual example component for reusable illustration cards
+interface VisualExampleProps {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}
+
+function VisualExample({ title, description, children }: VisualExampleProps) {
+  return (
+    <div className="mt-6 p-4 rounded-xl bg-secondary/40 border border-border/50">
+      <div className="flex items-center gap-2 mb-2">
+        <Image className="h-4 w-4 text-ecoba-gold" />
+        <h5 className="font-medium text-foreground text-sm">{title}</h5>
+      </div>
+      <p className="text-xs text-muted-foreground mb-4">{description}</p>
+      <div className="rounded-lg overflow-hidden border border-border/50 bg-background">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 interface SectionProps {
   title: string;
@@ -114,14 +146,15 @@ export default function Documentation() {
           <CardContent>
             <nav className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
               <a href="#introduction" className="text-muted-foreground hover:text-ecoba-gold transition-colors">1. Introduction & Overview</a>
-              <a href="#statistics" className="text-muted-foreground hover:text-ecoba-gold transition-colors">2. Dashboard Statistics Cards</a>
-              <a href="#analytics" className="text-muted-foreground hover:text-ecoba-gold transition-colors">3. Analytics Panels</a>
-              <a href="#table" className="text-muted-foreground hover:text-ecoba-gold transition-colors">4. Alumni Records Table</a>
-              <a href="#confidence" className="text-muted-foreground hover:text-ecoba-gold transition-colors">5. Confidence Score Guide</a>
-              <a href="#status" className="text-muted-foreground hover:text-ecoba-gold transition-colors">6. Status Classifications</a>
-              <a href="#filters" className="text-muted-foreground hover:text-ecoba-gold transition-colors">7. Filter Panel Guide</a>
-              <a href="#actions" className="text-muted-foreground hover:text-ecoba-gold transition-colors">8. Action Buttons</a>
-              <a href="#privacy" className="text-muted-foreground hover:text-ecoba-gold transition-colors">9. Data Privacy & Compliance</a>
+              <a href="#visual-guide" className="text-muted-foreground hover:text-ecoba-gold transition-colors">2. Visual Reference Guide</a>
+              <a href="#statistics" className="text-muted-foreground hover:text-ecoba-gold transition-colors">3. Dashboard Statistics Cards</a>
+              <a href="#analytics" className="text-muted-foreground hover:text-ecoba-gold transition-colors">4. Analytics Panels</a>
+              <a href="#table" className="text-muted-foreground hover:text-ecoba-gold transition-colors">5. Alumni Records Table</a>
+              <a href="#confidence" className="text-muted-foreground hover:text-ecoba-gold transition-colors">6. Confidence Score Guide</a>
+              <a href="#status" className="text-muted-foreground hover:text-ecoba-gold transition-colors">7. Status Classifications</a>
+              <a href="#filters" className="text-muted-foreground hover:text-ecoba-gold transition-colors">8. Filter Panel Guide</a>
+              <a href="#actions" className="text-muted-foreground hover:text-ecoba-gold transition-colors">9. Action Buttons</a>
+              <a href="#privacy" className="text-muted-foreground hover:text-ecoba-gold transition-colors">10. Data Privacy & Compliance</a>
             </nav>
           </CardContent>
         </Card>
@@ -159,8 +192,242 @@ export default function Documentation() {
           </Section>
         </div>
 
+        {/* Visual Reference Guide - NEW SECTION */}
+        <div id="visual-guide">
+          <Section title="2. Visual Reference Guide" icon={<Image className="h-5 w-5" />}>
+            <div className="space-y-6">
+              <p className="text-muted-foreground">
+                This section provides visual examples of the key interface elements to help you quickly 
+                identify and understand each part of the dashboard.
+              </p>
+
+              {/* Dashboard Overview Example */}
+              <div className="p-4 rounded-lg bg-secondary/30 border border-border/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <Monitor className="h-5 w-5 text-ecoba-gold" />
+                  <h4 className="font-semibold text-foreground">Dashboard Overview</h4>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  The main dashboard displays statistics cards at the top, followed by analytics panels 
+                  and the alumni records table.
+                </p>
+                {/* Visual mockup of dashboard layout */}
+                <div className="rounded-lg border border-border bg-background p-4 space-y-3">
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { label: 'Total Records', icon: Users, color: 'bg-ecoba-gold/20 text-ecoba-gold' },
+                      { label: 'Confirmed', icon: CheckCircle2, color: 'bg-green-500/20 text-green-400' },
+                      { label: 'Pending', icon: Clock, color: 'bg-amber-500/20 text-amber-400' },
+                      { label: 'This Week', icon: TrendingUp, color: 'bg-blue-500/20 text-blue-400' },
+                    ].map((card, i) => (
+                      <div key={i} className="p-2 rounded bg-card border border-border/50 text-center">
+                        <div className={`inline-flex p-1.5 rounded ${card.color} mb-1`}>
+                          <card.icon className="h-3 w-3" />
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">{card.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 rounded bg-card border border-border/50 h-16 flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">Platform Chart</span>
+                    </div>
+                    <div className="p-2 rounded bg-card border border-border/50 h-16 flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">Location List</span>
+                    </div>
+                  </div>
+                  <div className="p-2 rounded bg-card border border-border/50 h-20 flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground">Alumni Records Table</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Statistics Cards Example */}
+              <div className="p-4 rounded-lg bg-secondary/30 border border-border/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <BarChart3 className="h-5 w-5 text-ecoba-gold" />
+                  <h4 className="font-semibold text-foreground">Statistics Cards</h4>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Four cards showing key metrics. Each card displays an icon, value, and trend indicator.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-lg bg-card border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 rounded bg-ecoba-gold/20">
+                        <Users className="h-4 w-4 text-ecoba-gold" />
+                      </div>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">156</p>
+                    <p className="text-xs text-muted-foreground">Total Records</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-card border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 rounded bg-green-500/20">
+                        <CheckCircle2 className="h-4 w-4 text-green-400" />
+                      </div>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">89</p>
+                    <p className="text-xs text-muted-foreground">Confirmed</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-card border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 rounded bg-amber-500/20">
+                        <Clock className="h-4 w-4 text-amber-400" />
+                      </div>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">42</p>
+                    <p className="text-xs text-muted-foreground">Pending</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-card border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 rounded bg-blue-500/20">
+                        <TrendingUp className="h-4 w-4 text-blue-400" />
+                      </div>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">12</p>
+                    <p className="text-xs text-muted-foreground">This Week</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Table Example */}
+              <div className="p-4 rounded-lg bg-secondary/30 border border-border/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <Table className="h-5 w-5 text-ecoba-gold" />
+                  <h4 className="font-semibold text-foreground">Alumni Records Table</h4>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  The table displays all alumni records with sortable columns and action buttons.
+                </p>
+                <div className="rounded-lg border border-border bg-background overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead className="bg-secondary/50">
+                      <tr>
+                        <th className="text-left p-2 text-muted-foreground font-medium">Toggle</th>
+                        <th className="text-left p-2 text-muted-foreground font-medium">Name</th>
+                        <th className="text-left p-2 text-muted-foreground font-medium">Status</th>
+                        <th className="text-left p-2 text-muted-foreground font-medium">Confidence</th>
+                        <th className="text-left p-2 text-muted-foreground font-medium">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t border-border/50">
+                        <td className="p-2">
+                          <div className="w-8 h-4 bg-green-500 rounded-full relative">
+                            <div className="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full" />
+                          </div>
+                        </td>
+                        <td className="p-2 text-foreground">John Doe</td>
+                        <td className="p-2"><Badge className="badge-confirmed text-[10px] py-0">Confirmed</Badge></td>
+                        <td className="p-2">
+                          <div className="flex items-center gap-1">
+                            <div className="h-1.5 w-12 bg-secondary rounded-full overflow-hidden">
+                              <div className="h-full w-[92%] bg-green-500 rounded-full" />
+                            </div>
+                            <span className="text-green-400">92%</span>
+                          </div>
+                        </td>
+                        <td className="p-2 flex gap-1">
+                          <Eye className="h-3 w-3 text-muted-foreground" />
+                          <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                        </td>
+                      </tr>
+                      <tr className="border-t border-border/50">
+                        <td className="p-2">
+                          <div className="w-8 h-4 bg-secondary rounded-full relative">
+                            <div className="absolute left-0.5 top-0.5 w-3 h-3 bg-muted-foreground rounded-full" />
+                          </div>
+                        </td>
+                        <td className="p-2 text-foreground">Jane Smith</td>
+                        <td className="p-2"><Badge className="badge-probable text-[10px] py-0">Probable</Badge></td>
+                        <td className="p-2">
+                          <div className="flex items-center gap-1">
+                            <div className="h-1.5 w-12 bg-secondary rounded-full overflow-hidden">
+                              <div className="h-full w-[75%] bg-amber-500 rounded-full" />
+                            </div>
+                            <span className="text-amber-400">75%</span>
+                          </div>
+                        </td>
+                        <td className="p-2 flex gap-1">
+                          <Eye className="h-3 w-3 text-muted-foreground" />
+                          <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Filter Panel Example */}
+              <div className="p-4 rounded-lg bg-secondary/30 border border-border/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <SlidersHorizontal className="h-5 w-5 text-ecoba-gold" />
+                  <h4 className="font-semibold text-foreground">Filter Panel</h4>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  The slide-out filter panel allows you to narrow down records by various criteria.
+                </p>
+                <div className="rounded-lg border border-border bg-background p-4 max-w-xs">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">Confidence Score</p>
+                      <div className="h-2 bg-secondary rounded-full relative">
+                        <div className="h-2 w-1/2 bg-ecoba-gold rounded-full" />
+                        <div className="absolute top-1/2 left-1/2 -translate-y-1/2 w-4 h-4 bg-ecoba-gold rounded-full border-2 border-background" />
+                      </div>
+                      <p className="text-xs text-ecoba-gold mt-1">50%</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">Status</p>
+                      <div className="flex gap-2">
+                        <Badge className="badge-confirmed text-[10px]">Confirmed</Badge>
+                        <Badge variant="outline" className="text-[10px]">Probable</Badge>
+                        <Badge variant="outline" className="text-[10px]">Uncertain</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">Platform</p>
+                      <div className="flex flex-wrap gap-1">
+                        <Badge className="platform-linkedin text-[10px]">LinkedIn</Badge>
+                        <Badge className="platform-facebook text-[10px]">Facebook</Badge>
+                        <Badge variant="outline" className="text-[10px]">Twitter</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons Example */}
+              <div className="p-4 rounded-lg bg-secondary/30 border border-border/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <MousePointer className="h-5 w-5 text-ecoba-gold" />
+                  <h4 className="font-semibold text-foreground">Action Buttons</h4>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  The toolbar contains action buttons for filtering, scanning, and exporting data.
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  <Button variant="outline" size="sm" className="gap-2 text-xs">
+                    <Filter className="h-3 w-3" />
+                    Filters
+                  </Button>
+                  <Button size="sm" className="gap-2 text-xs bg-ecoba-gold text-ecoba-green-dark hover:bg-ecoba-gold/90">
+                    <RefreshCw className="h-3 w-3" />
+                    Run Scan
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-2 text-xs text-green-400 border-green-400/30">
+                    <Download className="h-3 w-3" />
+                    Export Excel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Section>
+        </div>
+
         <div id="statistics">
-          <Section title="2. Dashboard Statistics Cards" icon={<BarChart3 className="h-5 w-5" />}>
+          <Section title="3. Dashboard Statistics Cards" icon={<BarChart3 className="h-5 w-5" />}>
             <div className="space-y-4">
               <p className="text-muted-foreground mb-4">
                 The dashboard displays four key statistics at the top of the screen:
@@ -220,7 +487,7 @@ export default function Documentation() {
         </div>
 
         <div id="analytics">
-          <Section title="3. Analytics Panels" icon={<BarChart3 className="h-5 w-5" />}>
+          <Section title="4. Analytics Panels" icon={<BarChart3 className="h-5 w-5" />}>
             <div className="space-y-6">
               <div>
                 <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
@@ -258,7 +525,7 @@ export default function Documentation() {
         </div>
 
         <div id="table">
-          <Section title="4. Alumni Records Table" icon={<Users className="h-5 w-5" />}>
+          <Section title="5. Alumni Records Table" icon={<Users className="h-5 w-5" />}>
             <div className="space-y-4">
               <p className="text-muted-foreground mb-4">
                 The main data table displays all discovered alumni records with the following columns:
@@ -344,7 +611,7 @@ export default function Documentation() {
         </div>
 
         <div id="confidence">
-          <Section title="5. Confidence Score Guide" icon={<BarChart3 className="h-5 w-5" />}>
+          <Section title="6. Confidence Score Guide" icon={<BarChart3 className="h-5 w-5" />}>
             <div className="space-y-4">
               <div>
                 <h4 className="font-semibold text-foreground mb-2">What It Measures</h4>
@@ -413,7 +680,7 @@ export default function Documentation() {
         </div>
 
         <div id="status">
-          <Section title="6. Status Classifications" icon={<CheckCircle2 className="h-5 w-5" />}>
+          <Section title="7. Status Classifications" icon={<CheckCircle2 className="h-5 w-5" />}>
             <div className="space-y-4">
               <p className="text-muted-foreground mb-4">
                 Each alumni record is assigned one of three status classifications:
@@ -452,7 +719,7 @@ export default function Documentation() {
         </div>
 
         <div id="filters">
-          <Section title="7. Filter Panel Guide" icon={<Filter className="h-5 w-5" />}>
+          <Section title="8. Filter Panel Guide" icon={<Filter className="h-5 w-5" />}>
             <div className="space-y-4">
               <p className="text-muted-foreground mb-4">
                 Click the "Filters" button to open the filter panel. Available filters include:
@@ -511,7 +778,7 @@ export default function Documentation() {
         </div>
 
         <div id="actions">
-          <Section title="8. Action Buttons" icon={<RefreshCw className="h-5 w-5" />}>
+          <Section title="9. Action Buttons" icon={<RefreshCw className="h-5 w-5" />}>
             <div className="space-y-4">
               <p className="text-muted-foreground mb-4">
                 The dashboard toolbar contains three main action buttons:
@@ -559,7 +826,7 @@ export default function Documentation() {
         </div>
 
         <div id="privacy">
-          <Section title="9. Data Privacy & Compliance" icon={<Shield className="h-5 w-5" />}>
+          <Section title="10. Data Privacy & Compliance" icon={<Shield className="h-5 w-5" />}>
             <div className="space-y-4">
               <div>
                 <h4 className="font-semibold text-foreground mb-2">Data Collection Practices</h4>

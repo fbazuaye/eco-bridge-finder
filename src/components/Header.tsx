@@ -1,4 +1,4 @@
-import { Search, Bell, X, LogOut, BookOpen } from 'lucide-react';
+import { Search, X, LogOut, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { HelpModal } from '@/components/HelpModal';
+import { NotificationDropdown } from '@/components/NotificationDropdown';
 import ecobaLogo from '@/assets/ecoba-logo.png';
 
 interface HeaderProps {
@@ -47,12 +48,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
 
           {/* Right Actions - Mobile */}
           <div className="flex items-center gap-2 md:hidden">
-            <Button variant="ghost" size="icon" className="relative h-9 w-9">
-              <Bell className="h-4 w-4" />
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-ecoba-gold text-[10px] font-bold text-ecoba-green-dark">
-                3
-              </span>
-            </Button>
+            <NotificationDropdown />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -111,12 +107,7 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
             </Button>
           </Link>
           <HelpModal />
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-ecoba-gold text-[10px] font-bold text-ecoba-green-dark">
-              3
-            </span>
-          </Button>
+          <NotificationDropdown />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
