@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { 
   ArrowLeft, 
   Users, 
@@ -22,7 +24,8 @@ import {
   Monitor,
   Table,
   SlidersHorizontal,
-  MousePointer
+  MousePointer,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -98,10 +101,83 @@ function Section({ title, icon, children, defaultOpen = false }: SectionProps) {
 }
 
 export default function Documentation() {
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadPDF = async () => {
+    if (!contentRef.current) return;
+    
+    setIsGeneratingPDF(true);
+    
+    try {
+      // Temporarily expand all collapsible sections for capture
+      const collapsibleElements = contentRef.current.querySelectorAll('[data-state="closed"]');
+      collapsibleElements.forEach((el) => {
+        el.setAttribute('data-state', 'open');
+      });
+
+      // Wait for DOM update
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const canvas = await html2canvas(contentRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#0f1f17', // Match background color
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      
+      // Calculate total pages needed
+      const scaledHeight = imgHeight * ratio * (pdfWidth / imgWidth);
+      const pageHeight = pdfHeight - 20; // Leave margin
+      const totalPages = Math.ceil(scaledHeight / pageHeight);
+
+      for (let page = 0; page < totalPages; page++) {
+        if (page > 0) {
+          pdf.addPage();
+        }
+        
+        const yOffset = -(page * pageHeight * (imgWidth / pdfWidth) / ratio);
+        pdf.addImage(
+          imgData,
+          'PNG',
+          imgX,
+          10 + yOffset * ratio * (pdfWidth / imgWidth),
+          pdfWidth - (imgX * 2),
+          (imgHeight * (pdfWidth - imgX * 2)) / imgWidth
+        );
+      }
+
+      pdf.save('ECOBA-Intelligence-User-Manual.pdf');
+
+      // Restore collapsed state
+      collapsibleElements.forEach((el) => {
+        el.setAttribute('data-state', 'closed');
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur print:hidden">
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <img src={ecobaLogo} alt="ECOBA Logo" className="h-10 w-auto" />
@@ -112,17 +188,38 @@ export default function Documentation() {
               <p className="text-xs text-muted-foreground">User Manual</p>
             </div>
           </div>
-          <Link to="/dashboard">
-            <Button variant="outline" size="sm" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
+            >
+              {isGeneratingPDF ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Download PDF
+                </>
+              )}
             </Button>
-          </Link>
+            <Link to="/dashboard">
+              <Button variant="outline" size="sm" className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto max-w-4xl px-4 py-8">
+      <main ref={contentRef} className="container mx-auto max-w-4xl px-4 py-8 print:max-w-none print:px-8">
         {/* Page Title */}
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-ecoba-gold/10 px-4 py-2 mb-4">

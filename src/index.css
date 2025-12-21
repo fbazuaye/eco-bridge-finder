@@ -191,3 +191,42 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--ecoba-gold) / 0.7);
 }
+
+/* Print styles for PDF generation */
+@media print {
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: hsl(var(--background)) !important;
+  }
+
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  .print\\:max-w-none {
+    max-width: none !important;
+  }
+
+  .print\\:px-8 {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+
+  /* Force expand all collapsible sections */
+  [data-state="closed"] > [data-radix-collapsible-content] {
+    display: block !important;
+    height: auto !important;
+  }
+
+  /* Page break handling */
+  .mb-4 {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure backgrounds render */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
