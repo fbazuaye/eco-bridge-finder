@@ -1,4 +1,5 @@
-import { Search, Bell, X, LogOut } from 'lucide-react';
+import { Search, Bell, X, LogOut, BookOpen } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
@@ -103,6 +104,12 @@ export function Header({ searchQuery, onSearchChange }: HeaderProps) {
 
         {/* Right Actions - Desktop */}
         <div className="hidden md:flex items-center gap-3">
+          <Link to="/documentation">
+            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+              <BookOpen className="h-4 w-4" />
+              User Manual
+            </Button>
+          </Link>
           <HelpModal />
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
