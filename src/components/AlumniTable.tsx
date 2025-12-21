@@ -134,11 +134,11 @@ export function AlumniTable({ data, onApprovalChange, onViewDetails }: AlumniTab
                 onClick={() => handleSort('date_found')}
               >
                 <div className="flex items-center">
-                  Found
+                  Search Date
                   <SortIcon field="date_found" />
                 </div>
               </TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+              <TableHead className="w-[140px]">View Search Details</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
